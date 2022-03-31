@@ -2,6 +2,7 @@ package kg.gazprom.payments.utils;
 
 import kg.gazprom.payments.invoices.InvoiceDataModel;
 import kg.gazprom.payments.payments.PaymentDataModel;
+import kg.gazprom.payments.models.db.*;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
@@ -10,12 +11,13 @@ import java.sql.*;
 import java.util.ArrayList;
 
 
-// TODO: use pool
 public class pg {
 
-//    private static final String url = "jdbc:postgresql://192.168.0.185:5432/gazprom";
-//    private static final String username = "postgres";
-//    private static final String password = "postgres";
+    static {
+        // TODO: get pool connection
+    }
+
+
     private static final String url = "jdbc:postgresql://bs-docker-srv02:5432/postgres";
     private static final String username = "postgres";
     private static final String password = "jellyfish";
@@ -225,6 +227,63 @@ public class pg {
             log.error("Возникла не определенная ошибка!");
             log.trace("Сообщение: "+ e.getMessage() );
             e.printStackTrace();
+        }
+    }
+
+
+
+
+
+
+    public static ArrayList<getServicePaymentsByAccountRes> getServicePaymentsByAccount(String account) {
+        Connection conn = null;
+
+        try {
+            Class.forName("org.postgresql.Driver");
+            conn = DriverManager.getConnection(url, username, password);
+
+            PreparedStatement preparedStatement = conn.prepareStatement("SELECT txn_id, txn_date, pay_amount, service_id, id, sender, s.description AS service_name\n" +
+                    "FROM ps_replenishment_payment p\n" +
+                    "INNER JOIN rng_public_services s ON s.code = p.service_id\n" +
+                    "WHERE account = ?;");
+
+            preparedStatement.setString(1, account);
+            ResultSet rs = preparedStatement.executeQuery();
+            conn.close();
+
+            // Собираем в список
+            ArrayList<getServicePaymentsByAccountRes> paymentList = new ArrayList<>();
+
+            // Обрабатываем полученные строки
+            while( rs.next() ){
+                String transactionId = rs.getString("txn_id");
+                String date = rs.getString("txn_date");
+                float amount = rs.getFloat("pay_amount");
+                int serviceId = rs.getInt("service_id");
+                String serviceName = rs.getString("service_name");
+                String sender = rs.getString("sender");
+                int internalId = rs.getInt("id");
+
+                getServicePaymentsByAccountRes paymentItem = new getServicePaymentsByAccountRes(transactionId, date, amount, serviceId, serviceName, sender, internalId);
+                paymentList.add(paymentItem);
+            }
+
+            if( paymentList.size() == 0 ) {
+                return null;
+            }
+            else {
+                return paymentList;
+            }
+        } catch (SQLException e) {
+            log.error("Вознакла ошибка SQL выражения!");
+            log.trace("Сообщение: "+ e.getMessage() );
+            return null;
+        }
+        catch (Exception e) {
+            log.error("Вознакла не определенная ошибка!");
+            log.trace("Сообщение: "+ e.getMessage() );
+            e.printStackTrace();
+            return null;
         }
     }
 }

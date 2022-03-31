@@ -115,8 +115,5 @@ public class Invoice {
             e.printStackTrace();
             return Response.status(500).build();
         }
-
-
     }
-
 }

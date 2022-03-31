@@ -24,29 +24,29 @@
     </web-resource>
 
 
-	<servlet name="resolution" i18n-name-key="resolution.name" key="resolution" class="com.askartec.plugin.servlet.resolution"> 
-		<description key="resolution.description">The resolution Plugin</description>  
-		<url-pattern>/resolution</url-pattern>
-		<!-- http://localhost:2990/jira/plugins/servlet/resolution -->
-	</servlet>
+<!--	<servlet name="resolution" i18n-name-key="resolution.name" key="resolution" class="com.askartec.plugin.servlet.resolution"> -->
+<!--		<description key="resolution.description">The resolution Plugin</description>  -->
+<!--		<url-pattern>/resolution</url-pattern>-->
+<!--		&lt;!&ndash; http://localhost:2990/jira/plugins/servlet/resolution &ndash;&gt;-->
+<!--	</servlet>-->
 
 
 
 
 
-	<issue-tabpanel key="issue-tabpanel-invoices" name="Panel of invoices" class="com.askartec.plugin.invoices.IssueTab">
+	<issue-tabpanel key="issue-tabpanel-invoices" name="Panel of invoices" class="kg.gazprom.payments.invoices.IssueTab">
 		<description>Список счетов текущей задачи</description>
 		<label>Счета на оплату</label>
 		<supports-ajax-load>true</supports-ajax-load>
 	</issue-tabpanel>
 
-	<issue-tabpanel key="issue-tabpanel-payments" name="Panel of payments" class="com.askartec.plugin.payments.IssueTab">
+	<issue-tabpanel key="issue-tabpanel-payments" name="Panel of payments" class="kg.gazprom.payments.payments.IssueTab">
 		<description>Список платежей</description>
 		<label>Платежи</label>
 		<supports-ajax-load>true</supports-ajax-load>
 	</issue-tabpanel>
 
 	<rest key="invoice-rest-api" path="/api" version="1">
-		<package>com.askartec.plugin.rest.v1</package>
+		<package>kg.gazprom.payments.rest.v1</package>
 	</rest>
 </atlassian-plugin>
