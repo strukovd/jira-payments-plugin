@@ -7,14 +7,16 @@ public class InvoiceDataModel {
     public String id;
     public int serviceId;
     public String serviceName;
-    public float amount;
+    public float reqAmount;
+    public boolean payed;
     public ArrayList<PaymentDataModel> history;
 
-    public InvoiceDataModel(String id, int serviceId, String serviceName, float amount, ArrayList<PaymentDataModel> history) {
+    public InvoiceDataModel(String id, int serviceId, String serviceName, float amount, boolean payed, ArrayList<PaymentDataModel> history) {
         this.id = id;
         this.serviceId = serviceId;
         this.serviceName = serviceName;
-        this.amount = amount;
+        this.reqAmount = amount;
+        this.payed = payed;
         this.history = history;
     }
 }

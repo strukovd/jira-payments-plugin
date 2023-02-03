@@ -37,7 +37,7 @@ public class pg {
                         "FROM (" +
                             "SELECT p.txn_id, to_char(p.txn_date, 'DD.MM.YYYY HH24:MI:SS') AS txn_date, p.pay_amount, COALESCE(p.sender, 'Не указано') AS sender " +
                             "FROM ps_replenishment_payment p " +
-                            "WHERE p.account = i.account AND p.service_id = i.service_id" +
+                            "WHERE p.for_invoice = i.id" +
                         ") AS payments" +
                     ") AS payments " +
                     "FROM invoices_for_payment i " +
@@ -90,7 +90,7 @@ public class pg {
                     paymentHistory = null;
                 }
 
-                InvoiceDataModel invoiceItem = new InvoiceDataModel(id, serviceId, serviceName, required_amount, paymentHistory);
+                InvoiceDataModel invoiceItem = new InvoiceDataModel(id, serviceId, serviceName, required_amount, payed, paymentHistory);
                 invoiceList.add(invoiceItem);
             }
 

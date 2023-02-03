@@ -13,7 +13,6 @@ public class InvoiceItem implements IssueAction {
 
     public String getHtml() {
         String historySection;
-        float sumAmount = 0;
         StringBuilder preHistorySection = new StringBuilder();
 
         // Генерируем блок истории платежей для тек. счета
@@ -35,7 +34,6 @@ public class InvoiceItem implements IssueAction {
                         "<span style=\"flex: auto 1 0;\">" +
                         "<span>"+ this.invoiceData.history.get(count).sender +"</span>" +
                         "</span></div>");
-                sumAmount += this.invoiceData.history.get(count).amount;
                 count++;
             }
 
@@ -50,7 +48,8 @@ public class InvoiceItem implements IssueAction {
         // TODO: удалить это и смотреть по статусу из БД
         // Определим статус оплаты
         String stamp;
-        if (sumAmount >= this.invoiceData.amount) {
+        System.out.println(this.invoiceData.payed);
+        if (this.invoiceData.payed) {
             stamp = "<span style=\"" +
                     "background: #7bdb7f;" +
                     "color: #1b603d;" +
@@ -85,7 +84,7 @@ public class InvoiceItem implements IssueAction {
                 "<span>К оплате: <span style=\"" +
                 "color: darkgreen;" +
                 "font-weight: 700;\">" +
-                this.invoiceData.amount + " сом</span>" +
+                this.invoiceData.reqAmount + " сом</span>" +
                 "</span>" +
                 "</div>" +
                 "</div>" +
