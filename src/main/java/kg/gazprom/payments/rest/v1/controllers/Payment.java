@@ -1,4 +1,4 @@
-package kg.gazprom.payments.rest.v1;
+package kg.gazprom.payments.rest.v1.controllers;
 
 import kg.gazprom.payments.models.db.getServicePaymentsByAccountRes;
 import kg.gazprom.payments.utils.log;

@@ -286,4 +286,57 @@ public class pg {
             return null;
         }
     }
+
+
+    public static void changePaymentStatus(int invoiceId, boolean isPaid) {
+        Connection conn = null;
+
+        try {
+            Class.forName("org.postgresql.Driver");
+            conn = DriverManager.getConnection(url, username, password);
+
+            PreparedStatement preparedStatement = conn.prepareStatement("UPDATE invoices_for_payment " +
+                    "SET payed = ? " +
+                    "WHERE id = ?;");
+
+            preparedStatement.setBoolean(1, isPaid );
+            preparedStatement.setInt(2, invoiceId );
+            preparedStatement.executeQuery();
+            conn.close();
+        } catch (SQLException e) {
+            log.error("Вознакла ошибка SQL выражения!");
+            log.trace("Сообщение: "+ e.getMessage() );
+        }
+        catch (Exception e) {
+            log.error("Вознакла не определенная ошибка!");
+            log.trace("Сообщение: "+ e.getMessage() );
+            e.printStackTrace();
+        }
+    }
+
+    public static void changeInvoiceReqAmount(int invoiceId, double reqAmount) {
+        Connection conn = null;
+
+        try {
+            Class.forName("org.postgresql.Driver");
+            conn = DriverManager.getConnection(url, username, password);
+
+            PreparedStatement preparedStatement = conn.prepareStatement("UPDATE invoices_for_payment " +
+                    "SET req_amount = ? " +
+                    "WHERE id = ?;");
+
+            preparedStatement.setDouble(1, reqAmount );
+            preparedStatement.setInt(2, invoiceId );
+            preparedStatement.executeQuery();
+            conn.close();
+        } catch (SQLException e) {
+            log.error("Вознакла ошибка SQL выражения!");
+            log.trace("Сообщение: "+ e.getMessage() );
+        }
+        catch (Exception e) {
+            log.error("Вознакла не определенная ошибка!");
+            log.trace("Сообщение: "+ e.getMessage() );
+            e.printStackTrace();
+        }
+    }
 }

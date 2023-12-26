@@ -38,7 +38,12 @@ public class IssueTab extends AbstractIssueTabPanel3 {
             int count = 0;
             if(invoiceListFromDB != null) {
                 while (invoiceListFromDB.size() > count) {
-                    list.add( new InvoiceItem( invoiceListFromDB.get(count) ) );
+                    boolean isFirstItem = false;
+                    if(count == 0) {
+                        isFirstItem = true;
+                    }
+
+                    list.add( new InvoiceItem( invoiceListFromDB.get(count), isFirstItem ) );
                     count++;
                 }
             }

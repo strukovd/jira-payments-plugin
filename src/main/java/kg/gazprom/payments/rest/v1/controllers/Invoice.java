@@ -1,5 +1,6 @@
-package kg.gazprom.payments.rest.v1;
+package kg.gazprom.payments.rest.v1.controllers;
 
+import kg.gazprom.payments.rest.v1.services.InvoiceService;
 import kg.gazprom.payments.utils.log;
 import kg.gazprom.payments.utils.pg;
 import com.atlassian.jira.component.ComponentAccessor;
@@ -19,6 +20,7 @@ import com.atlassian.jira.util.json.JSONException;
 public class Invoice {
 
 
+    // TODO: вынести обработку в service и dao пакеты
     @POST
     @Path("/create")
     @Produces({MediaType.APPLICATION_JSON}) // Тип исх. данных
@@ -115,5 +117,34 @@ public class Invoice {
             e.printStackTrace();
             return Response.status(500).build();
         }
+    }
+
+    @PUT
+    @Path("/status")
+    @Produces({MediaType.APPLICATION_JSON}) // Тип исх. данных
+    @Consumes({MediaType.APPLICATION_JSON}) // Тип вх. данных
+    public Response changePaymentStatus(@QueryParam("id") int id, @QueryParam("isPaid") boolean isPaid) {
+        // `${location.origin}/rest/api/1/invoice/status?id=123&isPaid=false`
+        InvoiceService.changePaymentStatus(id, isPaid);
+        return Response.ok("{\"success\": true}").build();
+    }
+
+    @PUT
+    @Path("/amount")
+    @Produces({MediaType.APPLICATION_JSON}) // Тип исх. данных
+    @Consumes({MediaType.APPLICATION_JSON}) // Тип вх. данных
+    public Response changeInvoiceAmount(@QueryParam("id") int id, @QueryParam("reqAmount") double reqAmount) {
+        // `${location.origin}/rest/api/1/invoice/amount?id=123&reqAmount=200.22`
+        InvoiceService.changeInvoiceReqAmount(id, reqAmount);
+        return Response.ok("{\"success\": true}").build();
+    }
+
+    @DELETE
+    @Path("/{id}")
+    @Produces({MediaType.APPLICATION_JSON}) // Тип исх. данных
+    @Consumes({MediaType.APPLICATION_JSON}) // Тип вх. данных
+    public Response deleteInvoiceInDB(@PathParam("id") String id) {
+        // `${location.origin}/rest/api/1/invoice/12345`
+        return Response.ok("{\"success\": true}").build();
     }
 }
