@@ -31,7 +31,7 @@ public class IssueTab extends AbstractIssueTabPanel3 {
         Issue curIssue = showPanelRequest.issue();
         String curProjectKey = curIssue.getProjectObject().getKey();
 
-        return curProjectKey.matches("CL|NGN|GAZ");
+        return curProjectKey.matches("CL|NGN|GAZ|UL");
     }
 
 
