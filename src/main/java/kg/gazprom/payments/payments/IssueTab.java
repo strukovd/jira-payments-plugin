@@ -58,8 +58,7 @@ public class IssueTab extends AbstractIssueTabPanel3 {
                 // Если список счетов с БД не получен
                 if (paymentsListFromDB != null) {
                     while (paymentsListFromDB.size() > count) {
-                        res.add(new PaymentItem(paymentsListFromDB.get(count)));
-                        count++;
+                        res.add(new PaymentItem(paymentsListFromDB.get(count++), true));
                     }
                     return res;
                 } else {

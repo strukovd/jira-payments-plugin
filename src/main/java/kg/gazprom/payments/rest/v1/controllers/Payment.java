@@ -1,6 +1,6 @@
 package kg.gazprom.payments.rest.v1.controllers;
 
-import kg.gazprom.payments.models.db.getServicePaymentsByAccountRes;
+import kg.gazprom.payments.models.db.ServicePaymentDTO;
 import kg.gazprom.payments.utils.log;
 import kg.gazprom.payments.utils.pg;
 import javax.ws.rs.*;
@@ -18,6 +18,7 @@ import java.util.ArrayList;
 public class Payment {
 
 
+    // http://bs-mfc-srv01/rest/api/1/payment/find?account=050000821
     @GET
     @Path("/find")
     @Produces({MediaType.APPLICATION_JSON})
@@ -29,7 +30,7 @@ public class Payment {
 
 
         try {
-            ArrayList<getServicePaymentsByAccountRes> paymentListFromDB = pg.getServicePaymentsByAccount( account );
+            ArrayList<ServicePaymentDTO> paymentListFromDB = pg.getServicePaymentsByAccount( account );
             JSONObject resObject = new JSONObject();
 
             if( account == null ) {
@@ -76,9 +77,28 @@ public class Payment {
             e.printStackTrace();
             return Response.status(500).build();
         }
-
-
     }
 
-// http://bs-mfc-srv01/rest/api/1/payment/find?account=050000821
+
+    @DELETE
+    @Path("/")
+    @Produces({MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.APPLICATION_JSON})
+    public void delete(@QueryParam("id") Integer paymentId, @QueryParam("type") String typeOfPayment) {
+        try {
+            if(paymentId == null) throw new Exception("Параметр id не определен!");
+            if(typeOfPayment == null) typeOfPayment = "billing";
+
+            pg.removePayment( paymentId, typeOfPayment );
+            Response.ok().status(204).build();
+        }
+        catch (Exception e) {
+            log.error("Возникла не определенная ошибка!");
+            log.trace("Сообщение: "+ e.getMessage() );
+            e.printStackTrace();
+            Response.status(500).build();
+        }
+    }
+
+
 }

@@ -2,6 +2,7 @@ package kg.gazprom.payments.payments;
 
 
 public class PaymentDataModel {
+    public long id;
     public String transactionId;
     public String account;
     public String date;
@@ -13,11 +14,13 @@ public class PaymentDataModel {
 
 
 
-     public PaymentDataModel(String transactionId,
+     public PaymentDataModel(long id,
+                             String transactionId,
                              String account, String date,
                              float amount, int serviceId,
                              String serviceName, String sender) {
 
+        this.id = id;
         this.transactionId = transactionId;
         this.account = account;
         this.date = date;
@@ -25,7 +28,6 @@ public class PaymentDataModel {
         this.serviceId = serviceId;
         this.serviceName = serviceName;
         this.sender = sender;
-
     }
 }
 

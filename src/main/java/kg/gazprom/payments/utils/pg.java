@@ -8,6 +8,7 @@ import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 
 
@@ -35,7 +36,7 @@ public class pg {
                     "(" +
                         "SELECT json_agg(payments) " +
                         "FROM (" +
-                            "SELECT p.txn_id, to_char(p.txn_date, 'DD.MM.YYYY HH24:MI:SS') AS txn_date, p.pay_amount, COALESCE(p.sender, 'Не указано') AS sender " +
+                            "SELECT p.id, p.txn_id, to_char(p.txn_date, 'DD.MM.YYYY HH24:MI:SS') AS txn_date, p.pay_amount, COALESCE(p.sender, 'Не указано') AS sender " +
                             "FROM ps_replenishment_payment p " +
                             "WHERE p.for_invoice = i.id" +
                         ") AS payments" +
@@ -78,12 +79,13 @@ public class pg {
                     for (int i = 0; i < arrPayments.length(); i++) {
                         JSONObject rec = arrPayments.getJSONObject(i);
 
+                        int paymentId = rec.getInt("id");
                         String txn_id = rec.getString("txn_id");
                         String txn_date = rec.getString("txn_date");
                         float pay_amount = (float)rec.getDouble("pay_amount");
                         String sender = rec.getString("sender");
 
-                        paymentHistory.add(new PaymentDataModel(txn_id, account, txn_date, pay_amount, serviceId, serviceName, sender)  );
+                        paymentHistory.add(new PaymentDataModel(paymentId, txn_id, account, txn_date, pay_amount, serviceId, serviceName, sender)  );
                     }
                 }
                 else {
@@ -119,10 +121,6 @@ public class pg {
         }
     }
 
-
-
-
-
     public static ArrayList<PaymentDataModel> getPaymentsByAccount(String account) {
         Connection conn = null;
 
@@ -132,7 +130,7 @@ public class pg {
 
             PreparedStatement preparedStatement = conn.prepareStatement("SELECT * " +
                 "FROM (" +
-                    "SELECT rp.txn_id, " +
+                    "SELECT rp.id, rp.txn_id, " +
                         "to_char(rp.txn_date, 'DD.MM.YYYY HH24:MI:SS') AS txn_date, " +
                         "rp.pay_amount AS amount, " +
                         "COALESCE(rp.sender, 'Не указано') AS sender, " +
@@ -140,16 +138,16 @@ public class pg {
                         "COALESCE(s.description, 'Неизвестная услуга') AS service_name " +
                     "FROM ps_replenishment_payment rp " +
                     "LEFT JOIN rng_public_services s ON s.code = rp.service_id " +
-                    "WHERE account = ?" +
+                    "WHERE account = ? AND rp.removed is null " +
                     "UNION " +
-                    "SELECT bp.txn_id, " +
+                    "SELECT bp.id, bp.txn_id, " +
                         "to_char(bp.txn_date, 'DD.MM.YYYY HH24:MI:SS') AS txn_date, " +
                         "bp.bill_amount AS amount, " +
                         "COALESCE(bp.sender, 'Не указано') AS sender, " +
                         "0 AS service_id, " +
                         "'Оплата за газ' AS service_name " +
                     "FROM ps_billing_payment bp " +
-                    "WHERE account = ?" +
+                    "WHERE account = ? and bp.removed is null" +
                 ") AS payments " +
                 "ORDER BY txn_date;");
 
@@ -163,14 +161,15 @@ public class pg {
 
             // Обрабатываем полученные строки
             while( rs.next() ){
-                String id = rs.getString(1);
-                String date = rs.getString(2);
-                float amount = rs.getFloat(3);
-                String sender = rs.getString(4);
-                int serviceId = rs.getInt(5);
-                String serviceName = rs.getString(6);
+                int id = rs.getInt(1);
+                String txnId = rs.getString(2);
+                String date = rs.getString(3);
+                float amount = rs.getFloat(4);
+                String sender = rs.getString(5);
+                int serviceId = rs.getInt(6);
+                String serviceName = rs.getString(7);
 
-                PaymentDataModel paymentItem = new PaymentDataModel(id, account, date, amount, serviceId, serviceName, sender);
+                PaymentDataModel paymentItem = new PaymentDataModel(id, txnId, account, date, amount, serviceId, serviceName, sender);
                 paymentList.add(paymentItem);
             }
 
@@ -192,10 +191,6 @@ public class pg {
             return null;
         }
     }
-
-
-
-
 
     public static void createInvoiceInDB(String account, int serviceId, double req_amount, String issueKey) {
         Connection conn = null;
@@ -235,14 +230,14 @@ public class pg {
 
 
 
-    public static ArrayList<getServicePaymentsByAccountRes> getServicePaymentsByAccount(String account) {
+    public static ArrayList<ServicePaymentDTO> getServicePaymentsByAccount(String account) {
         Connection conn = null;
 
         try {
             Class.forName("org.postgresql.Driver");
             conn = DriverManager.getConnection(url, username, password);
 
-            PreparedStatement preparedStatement = conn.prepareStatement("SELECT txn_id, txn_date, pay_amount, service_id, id, sender, s.description AS service_name\n" +
+            PreparedStatement preparedStatement = conn.prepareStatement("SELECT id, txn_id, txn_date, pay_amount, service_id, id, sender, s.description AS service_name\n" +
                     "FROM ps_replenishment_payment p\n" +
                     "INNER JOIN rng_public_services s ON s.code = p.service_id\n" +
                     "WHERE account = ?;");
@@ -252,10 +247,11 @@ public class pg {
             conn.close();
 
             // Собираем в список
-            ArrayList<getServicePaymentsByAccountRes> paymentList = new ArrayList<>();
+            ArrayList<ServicePaymentDTO> paymentList = new ArrayList<>();
 
             // Обрабатываем полученные строки
             while( rs.next() ){
+                int id = rs.getInt("id");
                 String transactionId = rs.getString("txn_id");
                 String date = rs.getString("txn_date");
                 float amount = rs.getFloat("pay_amount");
@@ -264,7 +260,7 @@ public class pg {
                 String sender = rs.getString("sender");
                 int internalId = rs.getInt("id");
 
-                getServicePaymentsByAccountRes paymentItem = new getServicePaymentsByAccountRes(transactionId, date, amount, serviceId, serviceName, sender, internalId);
+                ServicePaymentDTO paymentItem = new ServicePaymentDTO(id, transactionId, date, amount, serviceId, serviceName, sender, internalId);
                 paymentList.add(paymentItem);
             }
 
@@ -287,6 +283,37 @@ public class pg {
         }
     }
 
+
+
+
+    public static void removePayment(int paymentId, String typeOfPayment) {
+        Connection conn = null;
+        String tableName = typeOfPayment.equals("billing") ? "ps_billing_payment" : "ps_replenishment_payment";
+
+        try {
+            Class.forName("org.postgresql.Driver");
+            conn = DriverManager.getConnection(url, username, password);
+
+            String sqlQuery = "UPDATE " + tableName + " " +
+                    "SET removed = ? " +
+                    "WHERE id = ?;";
+            System.out.println(sqlQuery);
+            PreparedStatement preparedStatement = conn.prepareStatement(sqlQuery);
+
+            preparedStatement.setObject(1, LocalDate.now());
+            preparedStatement.setInt(2, paymentId );
+            preparedStatement.execute();
+            conn.close();
+        } catch (SQLException e) {
+            log.error("Вознакла ошибка SQL выражения!");
+            log.trace("Сообщение: "+ e.getMessage() );
+        }
+        catch (Exception e) {
+            log.error("Вознакла не определенная ошибка!");
+            log.trace("Сообщение: "+ e.getMessage() );
+            e.printStackTrace();
+        }
+    }
 
     public static void changePaymentStatus(int invoiceId, boolean isPaid) {
         Connection conn = null;

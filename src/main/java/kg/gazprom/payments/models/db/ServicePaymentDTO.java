@@ -1,6 +1,7 @@
 package kg.gazprom.payments.models.db;
 
-public class getServicePaymentsByAccountRes {
+public class ServicePaymentDTO {
+    public long id;
     public String transactionId;
     public String date;
     public float amount;
@@ -9,7 +10,8 @@ public class getServicePaymentsByAccountRes {
     public String sender;
     public int internalId;
 
-    public getServicePaymentsByAccountRes(
+    public ServicePaymentDTO(
+            long id,
             String transactionId,
             String date,
             float amount,
@@ -18,6 +20,7 @@ public class getServicePaymentsByAccountRes {
             String sender,
             int internalId) {
 
+        this.id = id;
         this.transactionId = transactionId;
         this.date = date;
         this.amount = amount;
