@@ -128,28 +128,34 @@ public class pg {
             Class.forName("org.postgresql.Driver");
             conn = DriverManager.getConnection(url, username, password);
 
-            PreparedStatement preparedStatement = conn.prepareStatement("SELECT * " +
-                "FROM (" +
+            PreparedStatement preparedStatement = conn.prepareStatement(
+                "SELECT p.id, p.txn_id, to_char(p.txn_date, 'DD.MM.YYYY HH24:MI:SS') AS txn_date, " +
+                    "p.amount, p.sender, p.service_id, p.service_name " +
+                    "FROM ( " +
+                    "SELECT * " +
+                    "FROM ( " +
                     "SELECT rp.id, rp.txn_id, " +
-                        "to_char(rp.txn_date, 'DD.MM.YYYY HH24:MI:SS') AS txn_date, " +
-                        "rp.pay_amount AS amount, " +
-                        "COALESCE(rp.sender, 'Не указано') AS sender, " +
-                        "rp.service_id, " +
-                        "COALESCE(s.description, 'Неизвестная услуга') AS service_name " +
+                    "rp.txn_date, " +
+                    "rp.pay_amount AS amount, " +
+                    "COALESCE(rp.sender, 'Не указано') AS sender, " +
+                    "rp.service_id, " +
+                    "COALESCE(s.description, 'Неизвестная услуга') AS service_name " +
                     "FROM ps_replenishment_payment rp " +
                     "LEFT JOIN rng_public_services s ON s.code = rp.service_id " +
-                    "WHERE account = ? AND rp.removed is null " +
+                    "WHERE account = ? AND rp.removed IS NULL " +
                     "UNION " +
                     "SELECT bp.id, bp.txn_id, " +
-                        "to_char(bp.txn_date, 'DD.MM.YYYY HH24:MI:SS') AS txn_date, " +
-                        "bp.bill_amount AS amount, " +
-                        "COALESCE(bp.sender, 'Не указано') AS sender, " +
-                        "0 AS service_id, " +
-                        "'Оплата за газ' AS service_name " +
+                    "bp.txn_date, " +
+                    "bp.bill_amount AS amount, " +
+                    "COALESCE(bp.sender, 'Не указано') AS sender, " +
+                    "0 AS service_id, " +
+                    "'Оплата за газ' AS service_name " +
                     "FROM ps_billing_payment bp " +
-                    "WHERE account = ? and bp.removed is null" +
-                ") AS payments " +
-                "ORDER BY txn_date;");
+                    "WHERE account = ? AND bp.removed IS NULL " +
+                    ") AS payments " +
+                    "ORDER BY txn_date DESC " +
+                    ") AS p"
+            );
 
             preparedStatement.setString(1, account);
             preparedStatement.setString(2, account);
