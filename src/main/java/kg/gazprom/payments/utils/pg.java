@@ -10,6 +10,7 @@ import com.atlassian.jira.util.json.JSONObject;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 
 
 public class pg {
@@ -289,10 +290,48 @@ public class pg {
         }
     }
 
+	public static List<ReadingDTO> getReadings(String account) {
+		Connection conn = null;
+
+		try {
+			Class.forName("org.postgresql.Driver");
+			conn = DriverManager.getConnection(url, username, password);
+
+			PreparedStatement preparedStatement = conn.prepareStatement("SELECT *\n" +
+				"FROM api__acoount_readings p\n" +
+				"WHERE account = ?;");
+
+			preparedStatement.setString(1, account);
+			ResultSet rs = preparedStatement.executeQuery();
+			conn.close();
+
+			// Собираем в список
+			List<ReadingDTO> readingList = RSMapper.mapToList(rs, ReadingDTO.class);
+			System.out.println("readingList: " + readingList);
+
+			if( readingList.isEmpty() ) {
+				return null;
+			}
+			else {
+				return readingList;
+			}
+		} catch (SQLException e) {
+			log.error("Вознакла ошибка SQL выражения!");
+			log.trace("Сообщение: "+ e.getMessage() );
+			return null;
+		}
+		catch (Exception e) {
+			log.error("Вознакла не определенная ошибка!");
+			log.trace("Сообщение: "+ e.getMessage() );
+			e.printStackTrace();
+			return null;
+		}
+	}
 
 
 
-    public static void removePayment(int paymentId, String typeOfPayment) {
+
+	public static void removePayment(int paymentId, String typeOfPayment) {
         Connection conn = null;
         String tableName = typeOfPayment.equals("billing") ? "ps_billing_payment" : "ps_replenishment_payment";
 
@@ -320,6 +359,34 @@ public class pg {
             e.printStackTrace();
         }
     }
+
+	public static void removeReading(int readingId) {
+		Connection conn = null;
+
+		try {
+			Class.forName("org.postgresql.Driver");
+			conn = DriverManager.getConnection(url, username, password);
+
+			String sqlQuery = "UPDATE api__account_readings " +
+				"SET removed = ? " +
+				"WHERE id = ?;";
+			System.out.println(sqlQuery);
+			PreparedStatement preparedStatement = conn.prepareStatement(sqlQuery);
+
+			preparedStatement.setObject(1, LocalDate.now());
+			preparedStatement.setInt(2, readingId );
+			preparedStatement.execute();
+			conn.close();
+		} catch (SQLException e) {
+			log.error("Вознакла ошибка SQL выражения!");
+			log.trace("Сообщение: "+ e.getMessage() );
+		}
+		catch (Exception e) {
+			log.error("Вознакла не определенная ошибка!");
+			log.trace("Сообщение: "+ e.getMessage() );
+			e.printStackTrace();
+		}
+	}
 
     public static void changePaymentStatus(int invoiceId, boolean isPaid) {
         Connection conn = null;
