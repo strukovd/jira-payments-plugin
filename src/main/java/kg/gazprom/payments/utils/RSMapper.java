@@ -38,8 +38,9 @@ public class RSMapper {
 			if (field == null) continue;
 
 			Object value = rs.getObject(i); // Посколько мы не знаем тип значения - берем как Object (ссылку), текущей строки
-			// Можно добавить типизацию (int, double, boolean и т.п.)
-			field.set(instanceDTO, value);
+			if (value == null) continue;
+
+			setFieldValue(field, instanceDTO, value);
 		}
 
 		return instanceDTO;
@@ -85,5 +86,33 @@ public class RSMapper {
 			}
 		}
 		return sb.toString();
+	}
+
+	/**
+	 * Безопасно присваивает значение полю с автоматическим приведением типа
+	 */
+	private static void setFieldValue(Field field, Object target, Object value) throws Exception {
+		Class<?> type = field.getType();
+
+		if (type.isAssignableFrom(value.getClass())) {
+			field.set(target, value);
+		} else if (type == String.class) {
+			field.set(target, String.valueOf(value));
+		} else if ((type == int.class || type == Integer.class) && value instanceof Number) {
+			field.set(target, ((Number) value).intValue());
+		} else if ((type == long.class || type == Long.class) && value instanceof Number) {
+			field.set(target, ((Number) value).longValue());
+		} else if ((type == double.class || type == Double.class) && value instanceof Number) {
+			field.set(target, ((Number) value).doubleValue());
+		} else if ((type == boolean.class || type == Boolean.class)) {
+			if (value instanceof Boolean) field.set(target, value);
+			else if (value instanceof Number) field.set(target, ((Number) value).intValue() != 0);
+			else field.set(target, Boolean.parseBoolean(value.toString()));
+		} else if (type == java.util.Date.class && value instanceof java.sql.Timestamp) {
+			field.set(target, new java.util.Date(((Timestamp) value).getTime()));
+		} else {
+			// fallback — как строка
+			field.set(target, value.toString());
+		}
 	}
 }

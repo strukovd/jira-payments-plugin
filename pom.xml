@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>kg.gazprom.payments</groupId>
     <artifactId>payments</artifactId>
-    <version>2.0.62</version>
+    <version>2.0.68</version>
 
     <organization>
         <name>Gazprom Kyrgyzstan</name>
@@ -82,6 +82,12 @@
             <artifactId>guava</artifactId>
             <version>31.1-jre</version>
             <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.simpleflatmapper</groupId>
+            <artifactId>sfm-jdbc</artifactId>
+            <version>8.2.3</version>
         </dependency>
 
 <!--		<dependency> &lt;!&ndash; УДАЛИТЬ &ndash;&gt;-->

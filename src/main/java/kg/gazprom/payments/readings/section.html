@@ -1,0 +1,174 @@
+<script>
+    function closeAllPaymentMenu() {
+        document.querySelectorAll(`.menu-block-list`).forEach((el)=>{el.remove();});
+    }
+    function changePaymentStatus(invoiceId, isPaid) {
+        const url = `${location.origin}/rest/api/1/invoice/status?${new URLSearchParams({ id: invoiceId, isPaid })}`;
+        // const body = {issueKey:`"+ issueKey +"`, subTaskKeys: subTaskKeys};
+        const res = fetch(url, { method:`PUT`, headers: { "Content-Type": `application/json` }, } )
+            .then((response)=>{
+                if( response.ok ) AJS.flag({ type: 'info', title: 'Статус счёта к оплате успешно обновлен!', close: "auto" });
+                else throw new Error();
+            })
+            .catch((err)=>{
+                AJS.flag({ type: 'error', title: 'Не удалось статус счета к оплате!', body: err.message, close: "auto" });
+            })
+    }
+    function changeInvoiceReqAmount(invoiceId, reqAmount) {
+        const url = `${location.origin}/rest/api/1/invoice/amount?${new URLSearchParams({ id: invoiceId, reqAmount })}`;
+        const res = fetch(url, { method:`PUT`, headers: { "Content-Type": `application/json` }, } )
+            .then((response)=>{
+                if( response.ok ) AJS.flag({ type: 'info', title: 'Необходимая сумма для оплаты успешно обновлена!', close: "auto" });
+                else throw new Error();
+            })
+            .catch((err)=>{
+                AJS.flag({ type: 'error', title: 'Не обновить сумму к оплате!', body: err.message, close: "auto" });
+            })
+    }
+    function onClickPaymentMenuItem(e) {
+        const menuItem = e.currentTarget;
+        const actionKey = menuItem.dataset.actionKey;
+        switch(actionKey) {
+            case 'toPaid': {
+                const invoiceId = menuItem.parentElement.parentElement.parentElement.parentElement.parentElement.querySelector(`.invoice-title`).innerText.replace(/^.*№ /, '');
+                const isAgree = confirm(`Вы уверены что хотите безвозвратно сменить статус из "Не оплачен" в "Оплачен"?`);
+                if(isAgree) changePaymentStatus(invoiceId, true);
+                break;
+            }
+            case 'toUnpaid': {
+                const invoiceId = menuItem.parentElement.parentElement.parentElement.parentElement.parentElement.querySelector(`.invoice-title`).innerText.replace(/^.*№ /, '');
+                const isAgree = confirm(`Вы уверены что хотите безвозвратно сменить статус с "Оплачен" в "Не оплачен"?`);
+                if(isAgree) changePaymentStatus(invoiceId, false);
+                break;
+            }
+            case 'changeAmount': {
+                const invoiceId = menuItem.parentElement.parentElement.parentElement.parentElement.parentElement.querySelector(`.invoice-title`).innerText.replace(/^.*№ /, '');
+                const prevAmount = menuItem.parentElement.parentElement.parentElement.parentElement.parentElement.querySelector(`.service-amount-value`).innerText.replace(` сом`, ``);
+                const newAmount = prompt(`Внимание, сумма счета будет безвозвратно обновлена! Предыдущая сумма ${prevAmount}, введите новое значение:`, prevAmount);
+                if(newAmount) changeInvoiceReqAmount(invoiceId, newAmount);
+                break;
+            }
+            case 'remove': {
+                const invoiceId = menuItem.parentElement.parentElement.parentElement.parentElement.parentElement.querySelector(`.invoice-title`).innerText.replace(/^.*№ /, '');
+                const isAgree = confirm(`Вы уверены что хотите удалить счет на оплату (№ ${invoiceId})?`);
+                break;
+            }
+        }
+    }
+    function toggleMenu(e) {
+        const menuBtn = e.currentTarget;
+        const menuBlock = menuBtn.querySelector(`.menu-block-list`);
+        if(menuBlock) {
+            // menuBlock.remove();
+            closeAllPaymentMenu();
+        } else {
+            closeAllPaymentMenu();
+            menuBtn.insertAdjacentHTML(`beforeEnd`, `<div class="menu-block-list"><ul><li data-action-key='toPaid'>👉 В <span class='inner-paid-stamp'>Оплачен</span></li><li data-action-key='toUnpaid'>👈 В <span class='inner-unpaid-stamp'>Не оплачен</span></li><li data-action-key='changeAmount'>💵 Изменить сумму оплаты</li><li data-action-key='remove' class="disabled">🗑 Удалить</li></ul></div>`);
+            menuBtn.querySelectorAll(`ul li:not(.disabled)`).forEach( (el)=>{el.addEventListener(`click`, onClickPaymentMenuItem);} );
+            document.addEventListener(`click`, closeAllPaymentMenu, {once: true});
+            e.stopPropagation();
+        }
+    }
+    setTimeout(()=>{
+        document.querySelectorAll(`.menu-button`).forEach(
+            (el)=>{
+                el.addEventListener(`click`, toggleMenu);
+            }
+        )
+    }, 500);
+</script>
+
+<style>
+    .inv-item {
+        font: normal 13px sans-serif;
+    }
+    .inv-content {
+        padding: .5em .5em .5em 1em;
+        margin-bottom: 0.8em;
+        background: #f8f8f8;
+        border-left: 4px solid #4a84ff;
+    }
+    .inv-data {
+        display: flex;
+    }
+    .left-section {
+        flex: auto;
+    }
+    .left-section invoice-title {
+        padding-bottom:.3em;
+        font:700 1.1em sans-serif;
+    }
+    .service-name-section {}
+    .wr-service-name {}
+    .service-name-value {
+        font-weight: 700;
+    }
+    .service-amount-section {}
+    .wr-service-amount {}
+    .service-amount-value {
+        color: darkgreen;
+        font-weight: 700;
+    }
+    .right-section {
+        flex: auto;
+    }
+    .menu-button {
+        position: relative;
+        background: #ededed;
+        user-select: none;
+        cursor: pointer;
+        color: #172b4d63;
+        margin-left: .3em;
+        padding: .2em .4em;
+        border-radius: 3px;
+        font-weight: 700;
+        float: right;
+        box-shadow: 0 0 1px 0 rgba(0,0,0,.2);
+    }
+    .menu-block-list {
+        z-index: 1000;
+        position: absolute;
+        right: 0;
+        top: 2em;
+        background: #fff;
+        box-shadow: 0 0 3px 0 rgba(0,0,0,.1);
+        border-radius: 3px;
+        color: initial;
+    }
+    .menu-block-list ul {
+        list-style: none;
+        padding: 0;
+        line-height: 2em;
+        white-space: nowrap;
+        font-weight: 400;
+    }
+    .menu-block-list ul li {
+        padding: 0 1.2em;
+        border-bottom: 1px solid #f5f5f5;
+    }
+    .menu-block-list ul li:not(.disabled):hover {
+        background: #f5f5f5;
+    }
+    .menu-block-list ul li.disabled {
+        cursor: default;
+        filter: opacity(0.3);
+    }
+    section.history {}
+    .payment-history {
+        display: flex;
+    }
+    .payment-history>span {
+        flex: auto 1 0;
+    }
+    .payment-history>span .amount {
+        color: darkgreen;
+        font-weight: 700;
+    }
+    .history-section .wr-title {
+        padding:.5em 0;
+    }
+    .history-section .title {
+        padding-bottom:.3em;
+        font:700 1.1em sans-serif;
+    }
+</style>

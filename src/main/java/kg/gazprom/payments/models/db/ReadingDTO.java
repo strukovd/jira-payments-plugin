@@ -15,6 +15,7 @@ public class ReadingDTO {
 	public Boolean removed;
 	public String portal_user;
 
+	public ReadingDTO() {}
     public ReadingDTO(
 			Integer id,
             String account,
@@ -32,4 +33,17 @@ public class ReadingDTO {
         this.source = source;
         this.client = client;
     }
+
+	@Override
+	public String toString() {
+		return "{ " +
+			"\"id\":" + this.id +
+			", \"account\":\"" + this.account + "\"" +
+			", \"consumption\":" + this.consumption +
+			", \"date\":\"" + this.date + "\"" +
+			", \"reading\":" + this.reading +
+			", \"source\":" + this.source +
+			", \"client\":\"" + this.client + "\"" +
+			"}";
+	}
 }

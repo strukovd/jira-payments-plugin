@@ -6,11 +6,14 @@ import kg.gazprom.payments.models.db.*;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
+import org.simpleflatmapper.jdbc.JdbcMapper;
+import org.simpleflatmapper.jdbc.JdbcMapperFactory;
 
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 public class pg {
@@ -298,7 +301,7 @@ public class pg {
 			conn = DriverManager.getConnection(url, username, password);
 
 			PreparedStatement preparedStatement = conn.prepareStatement("SELECT *\n" +
-				"FROM api__acoount_readings p\n" +
+				"FROM api__account_readings p\n" +
 				"WHERE account = ?;");
 
 			preparedStatement.setString(1, account);
@@ -308,6 +311,7 @@ public class pg {
 			// Собираем в список
 			List<ReadingDTO> readingList = RSMapper.mapToList(rs, ReadingDTO.class);
 			System.out.println("readingList: " + readingList);
+
 
 			if( readingList.isEmpty() ) {
 				return null;
