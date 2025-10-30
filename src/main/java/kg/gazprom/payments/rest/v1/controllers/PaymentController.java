@@ -15,7 +15,7 @@ import java.util.ArrayList;
 
 
 @Path("/payment")
-public class Payment {
+public class PaymentController {
 
 
     // http://bs-mfc-srv01/rest/api/1/payment/find?account=050000821

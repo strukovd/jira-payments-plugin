@@ -1,7 +1,6 @@
 package kg.gazprom.payments.payments;
 
 import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
-import kg.gazprom.payments.invoices.InvoiceDataModel;
 import kg.gazprom.payments.utils.JiraApi;
 
 import java.util.Date;

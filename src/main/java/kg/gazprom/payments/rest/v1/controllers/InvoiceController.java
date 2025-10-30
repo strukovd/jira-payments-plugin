@@ -17,7 +17,7 @@ import com.atlassian.jira.util.json.JSONException;
 
 
 @Path("/invoice")
-public class Invoice {
+public class InvoiceController {
 
 
     // TODO: вынести обработку в service и dao пакеты
