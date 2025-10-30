@@ -6,10 +6,14 @@ import kg.gazprom.payments.models.db.*;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
+import org.simpleflatmapper.jdbc.JdbcMapper;
+import org.simpleflatmapper.jdbc.JdbcMapperFactory;
 
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 public class pg {
@@ -289,10 +293,50 @@ public class pg {
         }
     }
 
+	public static List<ReadingDTO> getReadings(String account) {
+		Connection conn = null;
+
+		try {
+			Class.forName("org.postgresql.Driver");
+			conn = DriverManager.getConnection(url, username, password);
+
+			PreparedStatement preparedStatement = conn.prepareStatement("SELECT r.*, t.name as source_name, t.key as source_key \n" +
+				"FROM api__account_readings as r \n" +
+				"INNER JOIN api__counterparty_tokens as t ON r.source = t.id \n" +
+				"WHERE account = ?;");
+
+			preparedStatement.setString(1, account);
+			ResultSet rs = preparedStatement.executeQuery();
+			conn.close();
+
+			// Собираем в список
+			List<ReadingDTO> readingList = RSMapper.mapToList(rs, ReadingDTO.class);
+			System.out.println("readingList: " + readingList);
+
+
+			if( readingList.isEmpty() ) {
+				return null;
+			}
+			else {
+				return readingList;
+			}
+		} catch (SQLException e) {
+			log.error("Вознакла ошибка SQL выражения!");
+			log.trace("Сообщение: "+ e.getMessage() );
+			return null;
+		}
+		catch (Exception e) {
+			log.error("Вознакла не определенная ошибка!");
+			log.trace("Сообщение: "+ e.getMessage() );
+			e.printStackTrace();
+			return null;
+		}
+	}
 
 
 
-    public static void removePayment(int paymentId, String typeOfPayment) {
+
+	public static void removePayment(int paymentId, String typeOfPayment) {
         Connection conn = null;
         String tableName = typeOfPayment.equals("billing") ? "ps_billing_payment" : "ps_replenishment_payment";
 

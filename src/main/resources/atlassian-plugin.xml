@@ -46,6 +46,12 @@
 		<supports-ajax-load>true</supports-ajax-load>
 	</issue-tabpanel>
 
+    <issue-tabpanel key="issue-tab-readings" name="Panel of readings" class="kg.gazprom.payments.readings.IssueTab">
+        <description>Список счетов текущей задачи</description>
+        <label>Показания</label>
+        <supports-ajax-load>true</supports-ajax-load>
+    </issue-tabpanel>
+
 	<rest key="invoice-rest-api" path="/api" version="1">
 		<package>kg.gazprom.payments.rest.v1</package>
 	</rest>
