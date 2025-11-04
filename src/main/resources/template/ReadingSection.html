@@ -1,0 +1,102 @@
+<script>
+    function fetchReadings(account, params = {} ) {
+        if(!account) throw new Error(`Не указан account`);
+
+        const { page=1, limit=20, removed=false } = params;
+        const queryParams = new URLSearchParams({
+            account, page,
+            // startDate,
+            // endDate,
+            limit, removed
+        });
+        const url = `http://bs-mfc-handler:6002/api/v1/readings?${queryParams.toString()}`;
+        const res = fetch(url, { method:`GET`, headers: { "Content-Type": `application/json` } } )
+            .then(async (response)=>{
+                if( response.ok ) {
+                    const resp = await response.json();
+                    const rows =  resp.data ?? [];
+                    const el = document.querySelector(`#readings-tab`);
+                    if( rows.length ) {
+                        const table = generateTable( generateRows(rows) );
+                        el.insertAdjacentHTML(`afterBegin`, table);
+                    }
+                    else {
+                        el.insertAdjacentHTML(`afterBegin`, `<div style="text-align:center; color:#7a869a;">📂 Нет данных</div>`);
+                    }
+                }
+                else throw new Error();
+            })
+            .catch((err)=>{
+                // AJS.flag({ type: `error`, title: `Не удалось удалить показание!`, body: err.message, close: `auto` });
+            });
+    }
+
+    function generateTable(rowsHtml=``) {
+        const table = `<table class="table-readings">
+            <thead><tr><td>ID</td><td>Потребление</td><td>Дата</td><td>Показание</td><td>Источник</td><td>...</td></tr></thead>
+            <style>.table-readings { width:100%; border-collapse:collapse; }.table-readings thead tr {  }.table-readings thead td { border:1px solid #f0f0f0; background:#f9f9f9; text-align:center; font-weight:700; }.table-readings tbody tr {  }.table-readings tbody td { border:1px solid #f0f0f0; text-align:center; }.table-readings tbody td.options { padding:.6em 1em; }.table-readings tbody tr[id^=r] { --bg-line:#ff000012; background-image:linear-gradient(25deg, var(--bg-line) 20%, rgba(255, 255, 255, 0) 20%, rgba(255, 255, 255, 1) 40%, var(--bg-line) 40%, var(--bg-line) 60%, rgba(255, 255, 255, 1) 60%, rgba(255, 255, 255, 1) 80%, var(--bg-line) 80%); background-size: 70px 100%; }</style>
+            <tbody class="tr-tbody">${rowsHtml}</tbody>
+        </table>`;
+
+        return table;
+    }
+
+    function generateRows(rows) {
+        let rowsHtml = ``;
+        for (const row of rows) {
+            if(!row.id) row.id = ``;
+            const attrId = false && row.id ? `id="r${row.id}"` : ``;
+            const rowHtml = `<tr ${attrId}>
+                <td>${row.id}</td>
+                <td>${row.consumption}</td>
+                <td>${row.created}</td>
+                <td>${row.reading}</td>
+                <td>${row.supplier?.name ?? ''}</td>
+                <td class="options"></td>
+            </tr>`;
+            rowsHtml += rowHtml;
+        }
+
+        return rowsHtml;
+    }
+
+    function removeReading(id) {
+        if(!id) throw new Error(`В методе removeReading некорретный параметр id: ${id}`);
+
+        const url = `${location.origin}/rest/api/1/reading/${id}`;
+        const res = fetch(url, { method:`DELETE`, headers: { "Content-Type": `application/json` } } )
+            .then((response)=>{
+                if( response.ok ) {
+                    AJS.flag({ type: `info`, title: 'Запись успешно удалена!', close: "auto" });
+                    document.querySelector(`.table-readings tbody tr#r50633`).classList.add(`rmd-reading`);
+                }
+                else throw new Error();
+            })
+            .catch((err)=>{
+                AJS.flag({ type: `error`, title: `Не удалось удалить показание!`, body: err.message, close: `auto` });
+            })
+    }
+
+    setTimeout(()=> {
+        const el = document.querySelector(`#readings-tab`);
+        const account = el.dataset.account;
+        fetchReadings(account);
+    }, 0);
+</script>
+
+<style>
+    .table-readings { width:100%; border-collapse:collapse; }
+    .table-readings thead tr {  }
+    .table-readings thead td { border:1px solid #f0f0f0; background:#f9f9f9; text-align:center; font-weight:700; }
+    .table-readings tbody tr {  }
+    .table-readings tbody td { border:1px solid #f0f0f0; text-align:center; }
+    .table-readings tbody td.options { padding:.6em 1em; }
+    .rmd-reading { --bg-line:#ff000012; background-image:linear-gradient(25deg, var(--bg-line) 20%, rgba(255, 255, 255, 0) 20%, rgba(255, 255, 255, 1) 40%, var(--bg-line) 40%, var(--bg-line) 60%, rgba(255, 255, 255, 1) 60%, rgba(255, 255, 255, 1) 80%, var(--bg-line) 80%); background-size: 70px 100%; }
+</style>
+
+
+
+
+
+
+
