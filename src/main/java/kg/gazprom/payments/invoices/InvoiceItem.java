@@ -254,7 +254,6 @@ public class InvoiceItem implements IssueAction {
 
         // Определим статус оплаты
         String stamp;
-        System.out.println(this.invoiceData.payed);
         if (this.invoiceData.payed) {
             stamp = "<span class='paid-stamp'>Оплачен</span>";
         }

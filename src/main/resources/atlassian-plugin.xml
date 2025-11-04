@@ -9,19 +9,18 @@
         <param name="plugin-logo">images/money.png</param>
     </plugin-info>
 
-    <!-- add our i18n resource -->
-    <resource type="i18n" name="i18n" location="payments"/>
+    <resource type="download" name="template/" location="/template"/>
     
     <!-- add our web resources -->
-    <web-resource key="payments-resources" name="payments Web Resources">
-        <dependency>com.atlassian.auiplugin:ajs</dependency>
-        
-        <resource type="download" name="payments.css" location="/css/payments.css"/>
-        <resource type="download" name="payments.js" location="/js/payments.js"/>
-        <resource type="download" name="images/" location="/images"/>
+<!--    <web-resource key="payments-resources" name="payments Web Resources">-->
+<!--        <dependency>com.atlassian.auiplugin:ajs</dependency>-->
+<!--        -->
+<!--        <resource type="download" name="payments.css" location="/css/payments.css"/>-->
+<!--        <resource type="download" name="payments.js" location="/js/payments.js"/>-->
+<!--        <resource type="download" name="images/" location="/images"/>-->
 
-        <context>payments</context>
-    </web-resource>
+<!--        <context>payments</context>-->
+<!--    </web-resource>-->
 
 
 <!--	<servlet name="resolution" i18n-name-key="resolution.name" key="resolution" class="com.askartec.plugin.servlet.resolution"> -->

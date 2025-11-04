@@ -6,8 +6,6 @@ import kg.gazprom.payments.models.db.*;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
-import org.simpleflatmapper.jdbc.JdbcMapper;
-import org.simpleflatmapper.jdbc.JdbcMapperFactory;
 
 import java.sql.*;
 import java.time.LocalDate;
@@ -302,8 +300,9 @@ public class pg {
 
 			PreparedStatement preparedStatement = conn.prepareStatement("SELECT r.*, t.name as source_name, t.key as source_key \n" +
 				"FROM api__account_readings as r \n" +
-				"INNER JOIN api__counterparty_tokens as t ON r.source = t.id \n" +
-				"WHERE account = ?;");
+				"LEFT JOIN api__counterparty_tokens as t ON r.source = t.id \n" +
+				"WHERE account = ?" +
+				"ORDER BY r.date DESC;");
 
 			preparedStatement.setString(1, account);
 			ResultSet rs = preparedStatement.executeQuery();
@@ -311,8 +310,6 @@ public class pg {
 
 			// Собираем в список
 			List<ReadingDTO> readingList = RSMapper.mapToList(rs, ReadingDTO.class);
-			System.out.println("readingList: " + readingList);
-
 
 			if( readingList.isEmpty() ) {
 				return null;
@@ -347,7 +344,7 @@ public class pg {
             String sqlQuery = "UPDATE " + tableName + " " +
                     "SET removed = ? " +
                     "WHERE id = ?;";
-            System.out.println(sqlQuery);
+//            System.out.println(sqlQuery);
             PreparedStatement preparedStatement = conn.prepareStatement(sqlQuery);
 
             preparedStatement.setObject(1, LocalDate.now());
@@ -364,6 +361,34 @@ public class pg {
             e.printStackTrace();
         }
     }
+
+	public static void removeReading(int readingId) {
+		Connection conn = null;
+
+		try {
+			Class.forName("org.postgresql.Driver");
+			conn = DriverManager.getConnection(url, username, password);
+
+			String sqlQuery = "UPDATE api__account_readings " +
+				"SET removed = ?, remover_by = ?" +
+				"WHERE id = ?;";
+//			System.out.println(sqlQuery);
+			PreparedStatement preparedStatement = conn.prepareStatement(sqlQuery);
+
+			preparedStatement.setObject(1, LocalDate.now());
+			preparedStatement.setInt(2, readingId );
+			preparedStatement.execute();
+			conn.close();
+		} catch (SQLException e) {
+			log.error("Вознакла ошибка SQL выражения!");
+			log.trace("Сообщение: "+ e.getMessage() );
+		}
+		catch (Exception e) {
+			log.error("Вознакла не определенная ошибка!");
+			log.trace("Сообщение: "+ e.getMessage() );
+			e.printStackTrace();
+		}
+	}
 
     public static void changePaymentStatus(int invoiceId, boolean isPaid) {
         Connection conn = null;

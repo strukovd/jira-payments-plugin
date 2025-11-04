@@ -13,9 +13,10 @@ public class ReadingDTO {
 	public String sourceKey;
 
     public String equipment;
-    public int tariff;
+    public Integer tariff;
 	public Boolean sended_to_oktell;
 	public Boolean removed;
+	public String removed_by;
 	public String portal_user;
 
 	public ReadingDTO() {}
