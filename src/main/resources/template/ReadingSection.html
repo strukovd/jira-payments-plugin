@@ -9,7 +9,7 @@
             // endDate,
             limit, removed
         });
-        const url = `http://bs-mfc-handler:6002/api/v1/readings?${queryParams.toString()}`;
+        const url = `http://10.14.188.202:6002/api/v1/readings?${queryParams.toString()}`;
         const res = fetch(url, { method:`GET`, headers: { "Content-Type": `application/json` } } )
             .then(async (response)=>{
                 if( response.ok ) {
@@ -70,7 +70,7 @@
         const id = tr.querySelectorAll(`td`)[0].innerText;
         if(!id) throw new Error(`В методе removeReading некорретный параметр id: ${id}`);
 
-        const url = `http://bs-mfc-handler:6002/api/v1/readings`;
+        const url = `http://10.14.188.202:6002/api/v1/readings`;
         const account = document.querySelector(`#readings-tab`).dataset.account;
         const res = fetch(url, {
             method:`DELETE`,
